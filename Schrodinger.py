@@ -23,7 +23,7 @@ class RadialHydrogenSolver:
         V_y = - (self.g / self.r) * np.exp(- self.m * self.r)
         return V_y
     
-    def total_potential(self):
+    def total_potential(self, r = None):
         V_c = self.coulomb_potential()
         V_y = self.yukawa_potential()
         V_tot = V_c + V_y
@@ -111,34 +111,49 @@ class RadialHydrogenSolver:
             for i in range(num_wavefunctions):
                 print("{:16.9e}".format(np.sum(wavefunctions.T[j]*wavefunctions.T[i])),end=" ")
             print()
-    
+        
     def compute_phase_shift(self, energies, wavefunctions):
         """
-        Calculates the phase shift for an array of arbitrary energies by comparing the numerical wavefunctions 
-        with the theoretical asymptotic form of the Coulomb potential.
-    
-        Parameters:
-            - wavefunctions: 2D array with values of numerically obtained wavefunctions for various energies.
-                             Each row corresponds to a wavefunction for a specific energy.
-            - energies: array of energies corresponding to the wavefunctions.
+        Calculates the phase shift for an array of arbitrary energies by solving the Schrödinger equation
+        using a matrix approach.
 
-        Returns:
-            - phase_shifts: array of phase shifts for each energy.
-        """
-        r_target = 50  # Distance at which to calculate the phase shift
-        idx_r = np.argmin(np.abs(self.r - r_target))  # Find index where r = 50
-        phase_shifts = []
-
-        for i, E in enumerate(energies):
-            k = np.sqrt(2 * self.m * E)  # Calculate wave number for energy E
-            numerical_value = wavefunctions[i, idx_r]  # Numerical wavefunction value at r = 50
-            asymptotic_value = np.exp(1j * (k * r_target + np.log(k * r_target) / r_target))
+        Args:
+            energies (array): Array of energy values at which to compute the phase shift.
+            r_inf (float, optional): Radial distance at which the phase shift is calculated.
+                             Defaults to 50.
         
-            # Calculate the phase shift by comparing imaginary and real parts
-            delta_l = np.angle(numerical_value / asymptotic_value)
+        Returns:
+            phase_shifts (array): Array of phase shifts for each energy.
+        """
+        phase_shifts = []
+        r_inf = 50
+        
+        # Ciclo su ogni energia fornita
+        for E in energies:
+            # Trova l'indice dell'autovalore più vicino a E
+            idx_energy = np.argmin(np.abs(eigenvalues - E))
+            
+            # Seleziona la funzione d'onda corrispondente
+            u = wavefunctions[:, idx_energy]
+            
+            # Valore numerico della funzione d'onda e derivata a r_inf
+            idx_r = np.argmin(np.abs(self.r - r_inf))
+            numerical_value = u[idx_r]
+            numerical_derivative = (u[idx_r + 1] - u[idx_r - 1]) / (2 * self.dr)
+            
+            # Calcolo del numero d'onda k
+            k = np.sqrt(2 * self.m * np.abs(E))
+            x = k * r_inf + self.alpha * np.log(2 * k * r_inf) / (2 * k)
+            beta = numerical_derivative / numerical_value
+            eta = k + 1 / (2 * k * r_inf)
+            
+            # Calcolo dello shift di fase
+            tan_delta_l = (np.cos(x) - beta * np.sin(x) / eta) / (np.sin(x) + beta * np.cos(x) / eta)
+            delta_l = np.arctan(tan_delta_l)
             phase_shifts.append(delta_l)
 
         return np.array(phase_shifts)
+
     
     
     """ ---
@@ -182,7 +197,7 @@ class RadialHydrogenSolver:
 
 """ TESTING CODE FOR VERIFICATION (REMOVE BEFORE FINAL USE) """
 # Create and use the solver
-solver = RadialHydrogenSolver(alpha=1, g=1, m=1, r_min=0.1, r_max=200, N=2000, l=0)
+solver = RadialHydrogenSolver(alpha=1, g=1, m=1, r_min=0.1, r_max=2000, N=20000, l=0)
 eigenvalues, wavefunctions = solver.solve_hamiltonian(40)
 solver.plot_wavefunctions(wavefunctions)
 solver.plot_potentials()
@@ -194,17 +209,11 @@ for n in range(1, len(eigenvalues) + 1):
 
 # Array of energies to calculate the phase shift
 energies = np.array([10e-10, 10e-5, 0.001, 0.003, 0.007, 0.01, 0.03, 0.07, 0.1, 0.3, 0.7, 1])
-phase_shifts = solver.compute_phase_shift(energies)
+phase_shifts = solver.compute_phase_shift(energies, wavefunctions)
 
 # Output phase shift
 print("Energy    Phase Shift (rad)")
 for energy, delta in zip(energies, phase_shifts):
     print(f"{energy:.12f}      {delta:.12f}")
-
-# First 20 calculated energies
-print("First 20 calculated energies (in natural units):")
-for i, E in enumerate(eigenvalues[:40], start=1):
-    print(f"E_{i} = {E:.6f}")
-
 
 
