@@ -120,9 +120,7 @@ class RadialHydrogenSolver:
         Parameters:
             - wavefunctions: 2D array with values of numerically obtained wavefunctions for various energies.
                              Each row corresponds to a wavefunction for a specific energy.
-            - r_values: array of r values.
             - energies: array of energies corresponding to the wavefunctions.
-            - alpha: Coulomb constant (Z * e^2 / ħ).
 
         Returns:
             - phase_shifts: array of phase shifts for each energy.
