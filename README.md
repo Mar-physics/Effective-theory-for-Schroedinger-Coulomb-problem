@@ -1,8 +1,19 @@
-Construction of an Effective Theory for the Schrodinger Equation.
+This repository provides an implementation of the analysis described in arXiv:nucl-th/9706029. The project explores the construction of an effective theory for the Schrödinger equation, focusing on a potential composed of a Coulomb term and an arbitrary short-range potential.
 
-Implementation for the analysis described in https://arxiv.org/abs/nucl-th/9706029. The starting point for these calculations is the file "Schrodinger.py", where one can find how to setup the Hamiltonian for a potential given by the sum of the Coulomb and Yukawa potentials.
-The last one has been chosen arbitrarily by the authors, one can substitute it with any short-ranged potential and repeat the analysis. 
+**Overview:**  
+The starting point for these calculations is the file Schrodinger.py, which demonstrates how to set up the Hamiltonian for a potential defined as the sum of:
+- A Coulomb potential.
+- A short-range potential, modeled in this implementation using a Yukawa potential.
+The Yukawa potential has been chosen arbitrarily by the authors and can be replaced with any short-range potential to repeat or adapt the analysis.
 
-The first attempt to approximate such a potential can be found in "DeltaPotential.py", where the short range potential is approximated by a delta function multiplied by a constant, which is fine tuned via First Order Perturbation Theory, according to what described in the cited paper.
-No plots are present in this file, as they will be implemented in the "EffectiveTheory.py".
+**Files Description**
+- "Schrodinger.py"
+Contains the primary implementation for setting up and solving the Schrödinger equation for the given potential. This file is the foundation of the analysis and includes tools for defining the Hamiltonian, as well as plots to visualize eigenfunctions and potentials behavior
 
+- "DeltaPotential.py"
+Introduces a naive attempt to approximate the short-range potential using a delta function, scaled by a constant. This constant is fine-tuned using First Order Perturbation Theory, as described in the cited paper.
+Note: This file does not produce plots; it focuses solely on theoretical approximations.
+
+- "EffectiveTheory.py"
+Implements the construction of the effective theory, incorporating second and fourth-order correction terms derived from the system's symmetries. Plots for visualizing results are generated in this file.  
+**Status: Work in progress (many functions are still missing).**
